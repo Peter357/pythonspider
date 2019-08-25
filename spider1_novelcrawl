@@ -1,0 +1,76 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 13 00:56:48 2019
+
+@author: fgc—erp
+
+小说逍遥派的简单爬取，比较简单，可以将小说下载到本地阅读。章节数请自行修改就可以了，测试通过。
+"""
+import requests
+from bs4 import BeautifulSoup
+import time
+
+
+#首页url
+main_url ='http://www.biqujia.com'
+
+target_url ='http://www.biqujia.com/book/0/496/'
+
+url_list=[]
+
+name_list =[]
+
+nums = 0
+headers = {
+		"User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+	}
+
+#爬取所有小说的网页链接
+def get_url():
+    req = requests.get(url= target_url,headers = headers)
+
+    html =req.text.encode('iso-8859-1').decode('gbk')
+
+    bf = BeautifulSoup(html, 'lxml')
+
+    every_url= bf.find_all('dd')
+    return every_url
+
+  
+#print (# * 30)
+#print ('网页全部下载完成')     
+
+#下载每个网页的内容
+def get_content(url):
+    req = requests.get(url= url,headers = headers)
+    req.encoding ='gbk'
+    html = req.text
+    bf_content = BeautifulSoup(html, 'lxml')
+    content = bf_content.find_all('div',id ='content')
+    contents = content[0].text
+    return contents
+
+'''
+#下载每个章节的章节名
+def get_name(url):
+    req = requests.get(url= url,headers = headers)
+    req.encoding ='gbk'
+    html = req.text
+    bf_content = BeautifulSoup(html, 'lxml')
+    name_content = bf_content.find('div',_id= 'content')
+    return name_content
+'''   
+        
+if __name__ == '__main__':
+    every_url =get_url()
+
+    for each in every_url:
+        url_list.append(main_url +each.a.get('href'))
+        name_list.append(each.a.text)
+    nums = 10
+    time.sleep(10)
+    for num in range(0,nums):
+        text=get_content(url_list[num])        
+        text_name = name_list[num]
+        with open(text_name,"w",encoding= 'utf-8') as f:
+            f.write(text)
